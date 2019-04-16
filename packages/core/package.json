@@ -11,5 +11,6 @@
   "scripts": {
     "build": "tsc",
     "clean": "rm -rf dist"
-  }
+  },
+  "gitHead": "e78bd3b69943aa758c57e2deebbc7347a84d6ec5"
 }
