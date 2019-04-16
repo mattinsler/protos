@@ -1,0 +1,22 @@
+{
+  "name": "protos",
+  "private": true,
+  "workspaces": [
+    "packages/*"
+  ],
+  "scripts": {
+    "bootstrap": "lerna bootstrap",
+    "build": "lerna run build",
+    "clean": "lerna run clean && lerna clean",
+    "publish": "lerna publish",
+    "test": "jest"
+  },
+  "devDependencies": {
+    "@types/jest": "^24.0.11",
+    "jest": "^24.7.1",
+    "lerna": "^3.13.2",
+    "ts-node": "^8.0.3",
+    "ts-jest": "^24.0.2",
+    "typescript": "^3.4.3"
+  }
+}

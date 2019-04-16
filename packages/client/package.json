@@ -1,0 +1,17 @@
+{
+  "name": "@protos/client",
+  "description": "",
+  "license": "MIT",
+  "main": "dist/index.js",
+  "typings": "dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "clean": "rm -rf dist"
+  },
+  "dependencies": {
+    "grpc": "^1.19.0"
+  }
+}

@@ -1,0 +1,68 @@
+{
+  "enums": [],
+  "messages": [
+    {
+      "comments": [],
+      "fields": [
+        {
+          "comments": [],
+          "name": "directory",
+          "number": 1,
+          "oneof": false,
+          "repeated": false,
+          "required": false,
+          "type": {
+            "basic": "string"
+          }
+        }
+      ],
+      "filename": "fs.proto",
+      "fullname": "fs.ReaddirRequest",
+      "name": "ReaddirRequest",
+      "package": "fs"
+    },
+    {
+      "comments": [],
+      "fields": [
+        {
+          "comments": [],
+          "name": "filenames",
+          "number": 1,
+          "oneof": false,
+          "repeated": true,
+          "required": false,
+          "type": {
+            "basic": "string"
+          }
+        }
+      ],
+      "filename": "fs.proto",
+      "fullname": "fs.ReaddirResponse",
+      "name": "ReaddirResponse",
+      "package": "fs"
+    }
+  ],
+  "services": [
+    {
+      "comments": [],
+      "filename": "fs.proto",
+      "fullname": "fs.FileSystem",
+      "methods": [
+        {
+          "comments": [],
+          "name": "readdir",
+          "request": {
+            "message": "fs.ReaddirRequest",
+            "stream": false
+          },
+          "response": {
+            "message": "fs.ReaddirResponse",
+            "stream": false
+          }
+        }
+      ],
+      "name": "FileSystem",
+      "package": "fs"
+    }
+  ]
+}

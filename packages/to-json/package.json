@@ -1,0 +1,23 @@
+{
+  "name": "@protos/to-json",
+  "description": "",
+  "license": "MIT",
+  "main": "dist/index.js",
+  "typings": "dist/index.d.ts",
+  "bin": {
+    "protos-to-json": "bin/protos-to-json.js"
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "clean": "rm -rf dist"
+  },
+  "dependencies": {
+    "@protos/core": "^0.0.2",
+    "@protos/fetch": "^0.0.2",
+    "@protos/parser": "^0.0.2",
+    "nopt": "^4.0.1"
+  }
+}
