@@ -17,5 +17,6 @@
     "@protos/parser": "^0.0.2",
     "@protos/to-package-definition": "^0.0.2",
     "grpc": "^1.19.0"
-  }
+  },
+  "version": "0.0.1"
 }
