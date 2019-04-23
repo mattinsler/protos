@@ -1,11 +1,8 @@
 import fs from 'fs';
 import grpc from 'grpc';
-// import path from 'path';
-// import { fromProtos } from '@protos/parser';
 import { toPackageDefinition } from '@protos/to-package-definition';
 
 (async () => {
-  // const protos = await fromProtos(path.resolve(__dirname, '..', 'protos'));
   const protos = require('../protos.json');
   const packageDefinition = toPackageDefinition(protos);
   const root = grpc.loadPackageDefinition(packageDefinition);
@@ -21,4 +18,6 @@ import { toPackageDefinition } from '@protos/to-package-definition';
 
   server.bind('0.0.0.0:50051', grpc.ServerCredentials.createInsecure());
   server.start();
+
+  console.log('Listening on 0.0.0.0:50051');
 })().catch(err => console.log(err.stack));
