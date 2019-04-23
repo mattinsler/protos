@@ -1,0 +1,22 @@
+{
+  "name": "@protos/test",
+  "private": true,
+  "description": "",
+  "license": "MIT",
+  "main": "dist/index.js",
+  "typings": "dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "clean": "rm -rf dist"
+  },
+  "dependencies": {
+    "fs-extra": "*",
+    "@protos/core": "^0.0.2",
+    "@protos/fetch": "^0.0.2",
+    "@protos/parser": "^0.0.2"
+  },
+  "version": "0.0.2"
+}

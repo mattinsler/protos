@@ -82,10 +82,16 @@ function parseFile(fileProto: Readonly<FileDescriptorProto.AsObject>): ParseFile
   const filePackage = pb_package ? pb_package.split('.').filter(a => a) : [];
 
   const locationList = fileProto.sourceCodeInfo.locationList;
-  const enums: { [fullname: string]: EnumSpec } = {};
-  const messages: { [fullname: string]: MessageSpec } = {};
+  const enums: {
+    [fullname: string]: EnumSpec;
+  } = {};
+  const messages: {
+    [fullname: string]: MessageSpec;
+  } = {};
   const packages = new Set<string>();
-  const services: { [fullname: string]: ServiceSpec } = {};
+  const services: {
+    [fullname: string]: ServiceSpec;
+  } = {};
 
   const parseEnum = (enumProto: Readonly<EnumDescriptorProto.AsObject>, pkg: string[], protoPath: number[]) => {
     const fullname = [...pkg, enumProto.name].join('.');
@@ -104,7 +110,8 @@ function parseFile(fileProto: Readonly<FileDescriptorProto.AsObject>): ParseFile
     };
   };
 
-  const parseType = (fieldProto: Readonly<FieldDescriptorProto.AsObject>): Type => {
+  // returning null means to ignore the type
+  const parseType = (fieldProto: Readonly<FieldDescriptorProto.AsObject>): Type | null => {
     if (BASIC_TYPE_NAME_MAP[fieldProto.type!]) {
       return {
         basic: BASIC_TYPE_NAME_MAP[fieldProto.type!]
@@ -121,8 +128,12 @@ function parseFile(fileProto: Readonly<FileDescriptorProto.AsObject>): ParseFile
           .join('.');
         return {
           map: {
-            keyType: { basic: typeName as BasicTypeName },
-            valueType: { message: typeName }
+            keyType: {
+              basic: typeName as BasicTypeName
+            },
+            valueType: {
+              message: typeName
+            }
           }
         };
       } else {
@@ -140,22 +151,28 @@ function parseFile(fileProto: Readonly<FileDescriptorProto.AsObject>): ParseFile
           .filter(a => a)
           .join('.')
       };
+    } else if (fieldProto.type! === FieldDescriptorProto.Type.TYPE_GROUP) {
+      // group types are deprecated and should be treated as "unknown" as per google/protobuf/descriptor.proto
+      return null;
     }
 
-    throw new Error();
+    throw new Error('Could not parse proto type: ' + fieldProto.type);
   };
 
-  const parseField = (fieldProto: Readonly<FieldDescriptorProto.AsObject>, protoPath: number[]): BasicField => {
+  // returning null means to ignore the field
+  const parseField = (fieldProto: Readonly<FieldDescriptorProto.AsObject>, protoPath: number[]): null | BasicField => {
     const type = parseType(fieldProto);
-    return {
-      comments: getComments(protoPath, locationList),
-      name: fieldProto.name!,
-      number: fieldProto.number!,
-      oneof: false,
-      repeated: isMapType(type) ? false : FieldDescriptorProto.Label.LABEL_REPEATED === fieldProto.label!,
-      required: false,
-      type
-    };
+    return type === null
+      ? null
+      : {
+          comments: getComments(protoPath, locationList),
+          name: fieldProto.name!,
+          number: fieldProto.number!,
+          oneof: false,
+          repeated: isMapType(type) ? false : FieldDescriptorProto.Label.LABEL_REPEATED === fieldProto.label!,
+          required: false,
+          type
+        };
   };
 
   const parseMessage = (messageProto: Readonly<DescriptorProto.AsObject>, pkg: string[], protoPath: number[]) => {
@@ -174,6 +191,9 @@ function parseFile(fileProto: Readonly<FileDescriptorProto.AsObject>): ParseFile
     const fields = (messageProto.fieldList || []).reduce(
       (arr, f, idx) => {
         const field = parseField(f, [...protoPath, 2, idx]);
+        if (field === null) {
+          return arr;
+        }
         if (f.oneofIndex !== undefined) {
           oneofs[f.oneofIndex].oneof.push(field);
           return arr;
@@ -263,21 +283,26 @@ function parseFile(fileProto: Readonly<FileDescriptorProto.AsObject>): ParseFile
 }
 
 export function parse(protos: ReadonlyArray<FileDescriptorProto.AsObject>): ProtoSpec {
-  const results = protos.map(parseFile);
+  try {
+    const results = protos.map(parseFile);
 
-  const enums = Object.values(
-    fromPairs(results.map(r => Object.entries(r.enums)).reduce((a, b) => [...a, ...b], []))
-  ).sort((l, r) => l.fullname.localeCompare(r.fullname));
-  const messages = Object.values(
-    fromPairs(results.map(r => Object.entries(r.messages)).reduce((a, b) => [...a, ...b], []))
-  ).sort((l, r) => l.fullname.localeCompare(r.fullname));
-  const services = Object.values(
-    fromPairs(results.map(r => Object.entries(r.services)).reduce((a, b) => [...a, ...b], []))
-  ).sort((l, r) => l.fullname.localeCompare(r.fullname));
+    const enums = Object.values(
+      fromPairs(results.map(r => Object.entries(r.enums)).reduce((a, b) => [...a, ...b], []))
+    ).sort((l, r) => l.fullname.localeCompare(r.fullname));
+    const messages = Object.values(
+      fromPairs(results.map(r => Object.entries(r.messages)).reduce((a, b) => [...a, ...b], []))
+    ).sort((l, r) => l.fullname.localeCompare(r.fullname));
+    const services = Object.values(
+      fromPairs(results.map(r => Object.entries(r.services)).reduce((a, b) => [...a, ...b], []))
+    ).sort((l, r) => l.fullname.localeCompare(r.fullname));
 
-  return {
-    enums,
-    messages,
-    services
-  };
+    return {
+      enums,
+      messages,
+      services
+    };
+  } catch (err) {
+    console.error(err.stack);
+    throw err;
+  }
 }
