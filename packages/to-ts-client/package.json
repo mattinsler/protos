@@ -14,7 +14,9 @@
   },
   "devDependencies": {},
   "dependencies": {
-    "@protos/core": "^0.0.2"
+    "@protos/core": "^0.0.2",
+    "@types/prettier": "^1.16.3",
+    "prettier": "^1.17.0"
   },
   "gitHead": "e78bd3b69943aa758c57e2deebbc7347a84d6ec5"
 }
