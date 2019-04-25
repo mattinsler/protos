@@ -1,6 +1,6 @@
 import prettier from 'prettier';
 import { ProtoSpec } from '@protos/core';
-import { AST, Visitor, traverse } from './ast';
+import { Visitor, from, traverse } from './ast';
 // import { ProtoSpecVisitor, visit } from './visitor';
 
 // function typescriptWriter() {
@@ -54,26 +54,30 @@ function typescriptWriter() {
     },
     get visitor(): Visitor {
       return {
+        // Root: path => {
+        //   console.log(path.get('packages').length);
+        // },
         Package: {
-          pre: ({ node }) => code.push(`namespace ${node.name} {`),
-          post: () => code.push('}')
+          enter: ({ node }) => code.push(`namespace ${node.name} {`),
+          exit: () => code.push('}')
         },
         Service: {
-          pre: ({ node }) => code.push(`namespace ${node.name} {`),
-          post: () => code.push('}')
-        },
-        Message: ({ node }) => code.push(`interface ${node.name} {}`),
-        Method: ast => {
-          // have a way to get a child ast by name... in this case request and response
-          traverse(ast, typeToString().visitor);
-          // traverse(spec);
-          // code.push(`function ${node.name}(req: ${node.request.message}): ${node.response.message};`);
-        },
-        Enum: {
-          pre: ({ node }) => code.push(`enum ${node.name} {`),
-          post: () => code.push('}')
-        },
-        EnumValue: ({ node }) => code.push(`${node.name} = ${node.value},`)
+          enter: ({ node }) => code.push(`namespace ${node.name} {`),
+          exit: () => code.push('}')
+        }
+        // Message: ({ node }) => code.push(`interface ${node.name} {}`),
+        // Method: ast => {
+        //   // have a way to get a child ast by name... in this case request and response
+
+        //   traverse(ast, typeToString().visitor);
+        //   // traverse(spec);
+        //   // code.push(`function ${node.name}(req: ${node.request.message}): ${node.response.message};`);
+        // },
+        // Enum: {
+        //   pre: ({ node }) => code.push(`enum ${node.name} {`),
+        //   post: () => code.push('}')
+        // },
+        // EnumValue: ({ node }) => code.push(`${node.name} = ${node.value},`)
       };
     }
   };
@@ -82,7 +86,7 @@ function typescriptWriter() {
 export function toTypescriptClient(protos: ProtoSpec) {
   const writer = typescriptWriter();
 
-  const ast = AST.from(protos);
+  const ast = from(protos);
   traverse(ast, writer.visitor);
 
   // visit(protos, [writer.visitor()]);

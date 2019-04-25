@@ -2,210 +2,207 @@ import * as Core from '@protos/core';
 
 import { Scope } from './scope';
 
-export type Visit<T extends AST> =
-  | ((ast: T) => void)
-  | Partial<{
-      pre: (node: T) => void;
-      post: (node: T) => void;
-    }>;
+export const enum Types {
+  Enum = 'Enum',
+  EnumValue = 'EnumValue',
+  Field = 'Field',
+  Message = 'Message',
+  Method = 'Method',
+  MethodRequest = 'MethodRequest',
+  MethodResponse = 'MethodResponse',
+  Package = 'Package',
+  Root = 'Root',
+  Service = 'Service'
+}
+
+export interface Node<T extends string = any> {
+  type: T;
+}
+
+export namespace Nodes {
+  export interface MethodRequest extends Node<Types.MethodRequest> {
+    // type: Nodes.Message;
+    stream: boolean;
+  }
+  export interface MethodResponse extends Node<Types.MethodResponse> {
+    // type: Nodes.Message;
+    stream: boolean;
+  }
+
+  export interface Method extends Node<Types.Method> {
+    // comments?: string[];
+    name: string;
+    request: Nodes.MethodRequest;
+    response: Nodes.MethodResponse;
+  }
+  export interface Package extends Node<Types.Package> {
+    fullname: string;
+    name: string;
+    packages: Nodes.Package[];
+    services: Nodes.Service[];
+  }
+  export interface Root extends Node<Types.Root> {
+    name: string;
+    packages: Nodes.Package[];
+  }
+  export interface Service extends Node<Types.Service> {
+    // comments?: string[];
+    filename: string;
+    fullname: string;
+    methods: Nodes.Method[];
+    name: string;
+    package: string;
+  }
+}
+
+type SubType<Base, Condition> = Pick<
+  Base,
+  { [Key in keyof Base]: Base[Key] extends Condition ? Key : never }[keyof Base]
+>;
+
+type NodeKeyNames<N extends Node> = keyof (SubType<N, Node> & SubType<N, Node[]>);
+
+type Unpacked<T> = T extends (infer U)[] ? U : T;
+type PathNodeTypeHelper<T> = T extends Node ? Path<T> : never;
+type PathNodeType<T> = T extends Node ? Path<T> : T extends Node[] ? PathNodeTypeHelper<Unpacked<T>>[] : never;
+
+type ValueTypes<N extends Node, K extends keyof N> = { [P in K]: Unpacked<N[P]> }[K];
+
+export interface Path<N extends Node> {
+  children: ValueTypes<N, NodeKeyNames<N>>[];
+  get: <KeyName extends NodeKeyNames<N>>(name: KeyName) => PathNodeType<N[KeyName]>;
+  node: N;
+  parent: Path<any> | null;
+  type: N['type'];
+}
+
+export type Visit<N extends Node> =
+  | ((path: Path<N>) => void)
+  | {
+      enter?: (path: Path<N>) => void;
+      exit?: (path: Path<N>) => void;
+    };
 
 export interface Visitor {
-  // BasicField?: Visit<BasicField>;
-  // BasicType?: Visit<BasicType>;
-  Enum?: Visit<AST.Enum>;
-  // EnumType?: Visit<EnumType>;
-  EnumValue?: Visit<AST.EnumValue>;
-  // Field?: Visit<Field>;
-  // MapType?: Visit<MapType>;
-  Message?: Visit<AST.Message>;
-  // MessageType?: Visit<MessageType>;
-  Method?: Visit<AST.Method>;
-  // OneOfField?: Visit<OneOfField>;
-  Package?: Visit<AST.Package>;
-  Root?: Visit<AST.Root>;
-  Service?: Visit<AST.Service>;
-  // Type?: Visit<Type>;
+  // Enum = 'Enum',
+  // EnumValue = 'EnumValue',
+  // Field = 'Field',
+  // Message = 'Message',
+  Method?: Visit<Nodes.Method>;
+  MethodRequest?: Visit<Nodes.MethodRequest>;
+  MethodResponse?: Visit<Nodes.MethodResponse>;
+  Package?: Visit<Nodes.Package>;
+  Root?: Visit<Nodes.Root>;
+  Service?: Visit<Nodes.Service>;
 }
 
-type ASTInstance<AstType extends AST.Type, NodeType, ChildrenType extends AST = undefined> = {
-  children: ChildrenType[];
-  node: NodeType;
-  type: AstType;
+const SortByName = <T extends { name: string }>(l: T, r: T) => l.name.localeCompare(r.name);
+const SortByNodeName = <T extends { node: { name: string } }>(l: T, r: T) => l.node.name.localeCompare(r.node.name);
+
+const NodeCreators = {
+  Method: {
+    children: (node: Nodes.Method) => [node.request, node.response],
+    from: (spec: Core.MethodSpec): Nodes.Method => ({
+      name: spec.name,
+      request: NodeCreators.MethodRequest.from(spec),
+      response: NodeCreators.MethodResponse.from(spec),
+      type: Types.Method
+    })
+  },
+  MethodRequest: {
+    children: (node: Nodes.MethodRequest) => [],
+    from: (spec: Core.MethodSpec): Nodes.MethodRequest => ({
+      stream: spec.request.stream,
+      type: Types.MethodRequest
+    })
+  },
+  MethodResponse: {
+    children: (node: Nodes.MethodResponse) => [],
+    from: (spec: Core.MethodSpec): Nodes.MethodResponse => ({
+      stream: spec.request.stream,
+      type: Types.MethodResponse
+    })
+  },
+  Package: {
+    children: (node: Nodes.Package) => [...node.packages, ...node.services],
+    from: (scope: Scope): Nodes.Package => ({
+      fullname: scope.fullname,
+      name: scope.name,
+      packages: Object.values(scope.children)
+        .map(NodeCreators.Package.from)
+        .sort(SortByName),
+      services: scope.services.map(NodeCreators.Service.from).sort(SortByName),
+      type: Types.Package
+    })
+  },
+  Service: {
+    children: (node: Nodes.Service) => node.methods,
+    from: (spec: Core.ServiceSpec): Nodes.Service => ({
+      filename: spec.filename,
+      fullname: spec.fullname,
+      methods: spec.methods.map(NodeCreators.Method.from).sort(SortByName),
+      name: spec.name,
+      package: spec.package,
+      type: Types.Service
+    })
+  },
+  Root: {
+    children: (node: Nodes.Root) => node.packages,
+    from: (protos: Core.ProtoSpec): Nodes.Root => ({
+      name: '',
+      packages: Object.values(Scope.from(protos).children)
+        .map(NodeCreators.Package.from)
+        .sort(SortByName),
+      type: Types.Root
+    })
+  }
 };
 
-export namespace AST {
-  export namespace Node {
-    export type Enum = Core.EnumSpec;
-    export type EnumValue = Core.EnumValue;
-    export type Message = Core.MessageSpec;
-    export type Method = Core.MethodSpec;
-    export type Service = Core.ServiceSpec;
-    export interface Package {
-      name: string;
-      fullname: string;
-    }
-    export interface Root {}
-  }
+function pathFrom<N extends Node>(node, parent: Path<any> | null): Path<N> {
+  const currentPath = {
+    children: NodeCreators[node.type].children(node),
+    get: name => {
+      const child = node[name];
+      return Array.isArray(child) ? child.map(c => pathFrom(c, currentPath)) : pathFrom(child, currentPath);
+    },
+    node,
+    parent,
+    type: node.type
+  };
 
-  export const enum Type {
-    Enum = 'Enum',
-    EnumValue = 'EnumValue',
-    Message = 'Message',
-    Method = 'Method',
-    Package = 'Package',
-    Root = 'Root',
-    Service = 'Service'
-  }
-
-  export interface Enum {
-    children: AST.EnumValue[];
-    node: Node.Enum;
-    type: Type.Enum;
-  }
-  export namespace Enum {
-    export const from = (node: Node.Enum): AST.Enum => ({
-      children: node.values.map(AST.EnumValue.from),
-      node,
-      type: Type.Enum
-    });
-  }
-  export interface EnumValue {
-    children: never[];
-    node: Node.EnumValue;
-    type: Type.EnumValue;
-  }
-  export namespace EnumValue {
-    export const from = (node: Node.EnumValue): AST.EnumValue => ({
-      children: [] as never[],
-      node,
-      type: Type.EnumValue
-    });
-  }
-  export interface Message {
-    children: never[];
-    node: Node.Message;
-    type: Type.Message;
-  }
-  export namespace Message {
-    export const from = (node: Node.Message): AST.Message => ({
-      children: [] as never[],
-      node,
-      type: Type.Message
-    });
-  }
-  export interface Method {
-    children: never[];
-    node: Node.Method;
-    type: Type.Method;
-  }
-  export namespace Method {
-    export const from = (node: Node.Method): AST.Method => ({
-      children: [] as never[],
-      node,
-      type: Type.Method
-    });
-  }
-  export interface Service {
-    children: AST.Method[];
-    node: Node.Service;
-    type: Type.Service;
-  }
-  export namespace Service {
-    export const from = (node: Node.Service): AST.Service => ({
-      children: node.methods.map(AST.Method.from),
-      node,
-      type: Type.Service
-    });
-  }
-  export interface Package {
-    children: (AST.Enum | AST.Message | AST.Package | AST.Service)[];
-    node: Node.Package;
-    type: Type.Package;
-  }
-  export namespace Package {
-    export const from = (node: Node.Package): AST.Package => ({
-      children: [],
-      node,
-      type: Type.Package
-    });
-  }
-  export interface Root {
-    children: AST.Package[];
-    node: Node.Root;
-    type: Type.Root;
-  }
-
-  const SortByName = <T extends { name: string }>(l: T, r: T) => l.name.localeCompare(r.name);
-  const SortByNodeName = <T extends { node: { name: string } }>(l: T, r: T) => l.node.name.localeCompare(r.node.name);
-
-  export function from(protos: Core.ProtoSpec): AST.Root {
-    const root: AST.Root = {
-      children: [],
-      node: {},
-      type: Type.Root
-    };
-
-    const fullname: string[] = [];
-
-    const traverseScope = (scope: Scope, ast: AST.Root | AST.Package) => {
-      fullname.push(scope.name);
-
-      const packageAST = AST.Package.from({
-        fullname: fullname.join('.'),
-        name: scope.name
-      });
-
-      packageAST.children.push(
-        ...[
-          ...scope.enums.map(AST.Enum.from),
-          ...scope.messages.map(AST.Message.from),
-          ...scope.services.map(AST.Service.from)
-        ].sort(SortByNodeName)
-      );
-
-      ast.children.push(packageAST);
-
-      for (let child of Object.values(scope.children).sort(SortByName)) {
-        traverseScope(child, packageAST);
-      }
-    };
-
-    for (let scope of Object.values(Scope.from(protos).children).sort(SortByName)) {
-      traverseScope(scope, root);
-    }
-
-    return root;
-  }
+  return currentPath;
 }
-export type AST = AST.Enum | AST.EnumValue | AST.Message | AST.Method | AST.Package | AST.Root | AST.Service;
 
-function pre<T extends AST>(visit: Visit<T>, ast: T) {
-  if (visit && typeof (visit as any).pre === 'function') {
-    (visit as any).pre(ast);
+function enter<N extends Node>(visit: Visit<N>, path: Path<N>) {
+  if (visit && typeof (visit as any).enter === 'function') {
+    (visit as any).enter(path);
   }
 }
 
-function post<T extends AST>(visit: Visit<T>, ast: T) {
-  if (visit && typeof (visit as any).post === 'function') {
-    (visit as any).post(ast);
+function exit<N extends Node>(visit: Visit<N>, path: Path<N>) {
+  if (visit && typeof (visit as any).exit === 'function') {
+    (visit as any).exit(path);
   }
 }
 
-function handle<T extends AST>(visit: Visit<T>, ast: T) {
+function handle<N extends Node>(visit: Visit<N>, path: Path<N>) {
   if (visit) {
     if (typeof visit === 'function') {
-      visit(ast);
+      visit(path);
     }
   }
 }
 
-export function traverse(root: AST, visitor: Visitor) {
-  function traverseAST(ast: AST) {
-    pre(visitor[ast.type], ast);
-    handle(visitor[ast.type], ast);
-    ast.children.forEach(traverseAST);
-    post(visitor[ast.type], ast);
-  }
+export function from(protos: Core.ProtoSpec): Path<Nodes.Root> {
+  return pathFrom(NodeCreators.Root.from(protos), null);
+}
 
-  traverseAST(root);
+export function traverse<N extends Node>(path: Path<N>, visitor: Visitor) {
+  enter(visitor[path.type], path);
+  handle(visitor[path.type], path);
+  for (let child of path.children) {
+    const childPath = pathFrom(child, path);
+    traverse(childPath, visitor);
+  }
+  exit(visitor[path.type], path);
 }
