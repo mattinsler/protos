@@ -1,7 +1,7 @@
 {
   "name": "@protos/traverse",
   "description": "",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "license": "MIT",
   "main": "dist/index.js",
   "typings": "dist/index.d.ts",
@@ -12,8 +12,7 @@
     "build": "tsc",
     "clean": "rm -rf dist"
   },
-  "devDependencies": {},
   "dependencies": {
-    "@protos/core": "^0.0.3"
+    "@protos/core": "^0.0.4"
   }
 }

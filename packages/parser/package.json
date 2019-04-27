@@ -1,7 +1,7 @@
 {
   "name": "@protos/parser",
   "description": "",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "license": "MIT",
   "main": "dist/index.js",
   "typings": "dist/index.d.ts",
@@ -19,7 +19,7 @@
     "@types/protoc-plugin": "^0.0.0"
   },
   "dependencies": {
-    "@protos/core": "^0.0.3",
+    "@protos/core": "^0.0.4",
     "execa": "^1.0.0",
     "google-protobuf": "^3.7.1",
     "grpc-tools": "^1.7.3",
