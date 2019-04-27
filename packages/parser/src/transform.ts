@@ -17,13 +17,20 @@ export async function transformRelativeToAbsoluteImports(protofiles: ProtoFile[]
     let content = await fs.readFile(absoluteFilename, 'utf8');
 
     let match;
+    let pos = 0;
     let hasChanged = false;
-    while (null !== (match = content.match(/import\s+(\"([^\"\/]+)\"|\'([^\'\/]+)\')\;/))) {
-      if (filesByDir[relativeDir].indexOf(match[2]) === -1) {
-        throw new Error(`${filename} imports ${match[2]}, but that file does not exist in ${absoluteDir}.`);
+    while (null !== (match = content.slice(pos).match(/import\s+(\"([^\"\/]+)\"|\'([^\'\/]+)\')\;/))) {
+      const currentpath = match[2];
+      const targetpath = path.join(relativeDir, match[2]);
+      if (currentpath !== targetpath) {
+        if (filesByDir[relativeDir].indexOf(currentpath) === -1) {
+          throw new Error(`${filename} imports ${currentpath}, but that file does not exist in ${absoluteDir}.`);
+        }
+        content = content.replace(match[0], `import "${targetpath}";`);
+        hasChanged = true;
       }
-      content = content.replace(match[0], `import "${path.join(relativeDir, match[2])}";`);
-      hasChanged = true;
+
+      pos += match.index + match[0].length;
     }
 
     if (hasChanged) {
