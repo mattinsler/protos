@@ -9,6 +9,7 @@
     "protos-to-json": "bin/protos-to-json.js"
   },
   "files": [
+    "bin",
     "dist"
   ],
   "scripts": {
