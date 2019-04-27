@@ -1,11 +1,7 @@
-// import grpc from 'grpc';
-// import path from 'path';
-// import { fromProtos } from '@protos/parser';
 import { GrpcContainer } from '@protos/client';
 import { toPackageDefinition } from '@protos/to-package-definition';
 
 (async () => {
-  // const protos = await fromProtos(path.resolve(__dirname, '..', 'protos'));
   const protos = require('../protos.json');
   const packageDefinition = toPackageDefinition(protos);
   const container = new GrpcContainer(packageDefinition);
