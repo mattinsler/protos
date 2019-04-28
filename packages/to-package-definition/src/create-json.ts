@@ -77,26 +77,24 @@ export function createJson({ enums, messages, services }: ProtoSpec) {
       }, {});
     }
 
-    if (fields.length > 0) {
-      pkg[message.name].fields = fields.reduce((o, f) => {
-        if (isMapType(f.type)) {
-          o[f.name] = {
-            keyType: typeName(f.type.map.keyType, message.fullname, message.package),
-            type: typeName(f.type.map.valueType, message.fullname, message.package),
-            id: f.number
-          };
-        } else {
-          o[f.name] = {
-            type: typeName(f.type, message.fullname, message.package),
-            id: f.number
-          };
-        }
+    pkg[message.name].fields = fields.reduce((o, f) => {
+      if (isMapType(f.type)) {
+        o[f.name] = {
+          keyType: typeName(f.type.map.keyType, message.fullname, message.package),
+          type: typeName(f.type.map.valueType, message.fullname, message.package),
+          id: f.number
+        };
+      } else {
+        o[f.name] = {
+          type: typeName(f.type, message.fullname, message.package),
+          id: f.number
+        };
+      }
 
-        f.repeated && (o[f.name].rule = 'repeated');
+      f.repeated && (o[f.name].rule = 'repeated');
 
-        return o;
-      }, {});
-    }
+      return o;
+    }, {});
   }
 
   for (let e of enums) {
