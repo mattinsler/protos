@@ -40,6 +40,10 @@ const PROTOC = findBinary('grpc-tools', 'grpc_tools_node_protoc');
 const PROTOC_GEN_PARSER = require.resolve('./protoc-gen-parser');
 
 export async function protoc(files: string[], includes: string[]): Promise<ProtoSpec> {
+  if (files.length === 0) {
+    return { enums: [], messages: [], services: [] };
+  }
+
   const tmpdir = path.resolve(os.tmpdir(), crypto.randomBytes(16).toString('hex'));
   await fs.mkdirs(tmpdir);
 
