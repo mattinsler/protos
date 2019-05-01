@@ -101,10 +101,12 @@ function parseFile(fileProto: Readonly<FileDescriptorProto.AsObject>): ParseFile
       filename: fileProto.name!,
       fullname,
       name: enumProto.name!,
+      options: enumProto.options,
       package: pkg.join('.'),
       values: enumProto.valueList.map((value, idx) => ({
         comments: getComments([...protoPath, 2, idx], locationList),
         name: value.name!,
+        options: value.options,
         value: value.number!
       }))
     };
@@ -162,6 +164,7 @@ function parseFile(fileProto: Readonly<FileDescriptorProto.AsObject>): ParseFile
   // returning null means to ignore the field
   const parseField = (fieldProto: Readonly<FieldDescriptorProto.AsObject>, protoPath: number[]): null | BasicField => {
     const type = parseType(fieldProto);
+
     return type === null
       ? null
       : {
@@ -169,6 +172,7 @@ function parseFile(fileProto: Readonly<FileDescriptorProto.AsObject>): ParseFile
           name: fieldProto.name!,
           number: fieldProto.number!,
           oneof: false,
+          options: fieldProto.options,
           repeated: isMapType(type) ? false : FieldDescriptorProto.Label.LABEL_REPEATED === fieldProto.label!,
           required: false,
           type
@@ -185,7 +189,8 @@ function parseFile(fileProto: Readonly<FileDescriptorProto.AsObject>): ParseFile
     const oneofs: OneOfField[] = (messageProto.oneofDeclList || []).map(o => ({
       comments: [],
       name: o.name!,
-      oneof: []
+      oneof: [],
+      options: o.options
     }));
 
     const fields = (messageProto.fieldList || []).reduce(
@@ -230,6 +235,7 @@ function parseFile(fileProto: Readonly<FileDescriptorProto.AsObject>): ParseFile
       filename: fileProto.name!,
       fullname,
       name: messageProto.name!,
+      options: messageProto.options,
       package: pkg.join('.')
     };
   };
@@ -237,6 +243,7 @@ function parseFile(fileProto: Readonly<FileDescriptorProto.AsObject>): ParseFile
   const parseMethod = (methodProto: Readonly<MethodDescriptorProto.AsObject>, protoPath: number[]): MethodSpec => ({
     comments: getComments(protoPath, locationList),
     name: methodProto.name!,
+    options: methodProto.options,
     request: {
       message: methodProto
         .inputType!.split('.')
@@ -266,6 +273,7 @@ function parseFile(fileProto: Readonly<FileDescriptorProto.AsObject>): ParseFile
       fullname,
       methods: (serviceProto.methodList || []).map((m, idx) => parseMethod(m, [...protoPath, 2, idx])),
       name: serviceProto.name!,
+      options: serviceProto.options,
       package: pkg.join('.')
     };
   };

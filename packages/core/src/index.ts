@@ -33,11 +33,16 @@ export interface MessageType {
 
 export type Type = BasicType | EnumType | MapType | MessageType;
 
+export interface Options {
+  [key: string]: any;
+}
+
 export interface BasicField {
   comments?: string[];
   name: string;
   number: number;
   oneof: false;
+  options?: Options;
   repeated: boolean;
   required: boolean;
   type: Type;
@@ -47,6 +52,7 @@ export interface OneOfField {
   comments?: string[];
   name: string;
   oneof: BasicField[];
+  options?: Options;
 }
 
 export type Field = BasicField | OneOfField;
@@ -57,12 +63,14 @@ export interface MessageSpec {
   filename: string;
   fullname: string;
   name: string;
+  options?: Options;
   package: string;
 }
 
 export interface EnumValue {
   comments?: string[];
   name: string;
+  options?: Options;
   value: number;
 }
 
@@ -71,6 +79,7 @@ export interface EnumSpec {
   filename: string;
   fullname: string;
   name: string;
+  options?: Options;
   package: string;
   values: EnumValue[];
 }
@@ -78,6 +87,7 @@ export interface EnumSpec {
 export interface MethodSpec {
   comments?: string[];
   name: string;
+  options?: Options;
   request: MessageType & {
     stream: boolean;
   };
@@ -92,6 +102,7 @@ export interface ServiceSpec {
   fullname: string;
   methods: MethodSpec[];
   name: string;
+  options?: Options;
   package: string;
 }
 
