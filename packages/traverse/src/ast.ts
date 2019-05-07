@@ -29,6 +29,7 @@ export namespace Nodes {
     comments?: string[];
     name: string;
     number: number;
+    options?: Core.Options;
     repeated: boolean;
     required: boolean;
     type: Nodes.Type;
@@ -41,6 +42,7 @@ export namespace Nodes {
     filename: string;
     fullname: string;
     name: string;
+    options?: Core.Options;
     package: string;
     values: Nodes.EnumValue[];
   }
@@ -50,6 +52,7 @@ export namespace Nodes {
   export interface EnumValue extends Node<Types.EnumValue> {
     comments?: string[];
     name: string;
+    options?: Core.Options;
     value: number;
   }
   export type Field = Nodes.BasicField | Nodes.OneOfField;
@@ -68,6 +71,7 @@ export namespace Nodes {
     name: string;
     // only the oneof field
     oneofField?: Nodes.OneOfField;
+    options?: Core.Options;
     package: string;
   }
   export interface MessageType extends Node<Types.MessageType> {
@@ -76,6 +80,7 @@ export namespace Nodes {
   export interface Method extends Node<Types.Method> {
     comments?: string[];
     name: string;
+    options?: Core.Options;
     request: Nodes.MethodRequest;
     response: Nodes.MethodResponse;
   }
@@ -91,6 +96,7 @@ export namespace Nodes {
     comments?: string[];
     fields: Nodes.BasicField[];
     name: string;
+    options?: Core.Options;
   }
   export interface Package extends Node<Types.Package> {
     enums: Nodes.Enum[];
@@ -110,6 +116,7 @@ export namespace Nodes {
     fullname: string;
     methods: Nodes.Method[];
     name: string;
+    options?: Core.Options;
     package: string;
   }
   export type Type = Nodes.BasicType | Nodes.EnumType | Nodes.MapType | Nodes.MessageType;
@@ -125,6 +132,7 @@ export const NodeCreators = {
       name: spec.name,
       nodeType: Types.BasicField,
       number: spec.number,
+      options: spec.options,
       repeated: spec.repeated,
       required: spec.required,
       type: NodeCreators.Type.from(spec.type)
@@ -145,6 +153,7 @@ export const NodeCreators = {
       fullname: spec.fullname,
       name: spec.name,
       nodeType: Types.Enum,
+      options: spec.options,
       package: spec.package,
       values: spec.values.map(NodeCreators.EnumValue.from)
     })
@@ -162,6 +171,7 @@ export const NodeCreators = {
       comments: spec.comments,
       name: spec.name,
       nodeType: Types.EnumValue,
+      options: spec.options,
       value: spec.value
     })
   },
@@ -198,6 +208,7 @@ export const NodeCreators = {
       name: spec.name,
       nodeType: Types.Message,
       oneofField: spec.fields.filter(Core.isOneOfField).map(NodeCreators.OneOfField.from)[0],
+      options: spec.options,
       package: spec.package
     })
   },
@@ -207,6 +218,7 @@ export const NodeCreators = {
       comments: spec.comments,
       name: spec.name,
       nodeType: Types.Method,
+      options: spec.options,
       request: NodeCreators.MethodRequest.from(spec),
       response: NodeCreators.MethodResponse.from(spec)
     })
@@ -233,7 +245,8 @@ export const NodeCreators = {
       comments: spec.comments,
       fields: spec.oneof.map(NodeCreators.BasicField.from),
       name: spec.name,
-      nodeType: Types.OneOfField
+      nodeType: Types.OneOfField,
+      options: spec.options
     })
   },
   Package: {
@@ -260,6 +273,7 @@ export const NodeCreators = {
       methods: spec.methods.map(NodeCreators.Method.from).sort(SortByName),
       name: spec.name,
       nodeType: Types.Service,
+      options: spec.options,
       package: spec.package
     })
   },
