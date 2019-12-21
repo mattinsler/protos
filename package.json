@@ -12,11 +12,11 @@
     "test": "jest"
   },
   "devDependencies": {
-    "@types/jest": "^24.0.11",
-    "jest": "^24.7.1",
+    "@types/jest": "^24.0.24",
+    "jest": "^24.9.0",
     "lerna": "^3.13.2",
-    "ts-node": "^8.0.3",
-    "ts-jest": "^24.0.2",
-    "typescript": "^3.4.3"
+    "ts-node": "^8.5.4",
+    "ts-jest": "^24.2.0",
+    "typescript": "^3.7.4"
   }
 }

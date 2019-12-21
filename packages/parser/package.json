@@ -22,7 +22,7 @@
     "@protos/core": "^0.0.10",
     "execa": "^1.0.0",
     "google-protobuf": "^3.7.1",
-    "grpc-tools": "^1.7.3",
+    "grpc-tools": "^1.8.0",
     "load-json-file": "^5.3.0",
     "protoc-plugin": "^0.0.6"
   },
