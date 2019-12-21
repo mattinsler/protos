@@ -9,7 +9,7 @@ type NodeKeyNames<N extends Node> = keyof (SubType<N, Node> & SubType<N, Node[]>
 
 type Unpacked<T> = T extends (infer U)[] ? U : T;
 type PathNodeTypeHelper<T> = T extends Node ? Path<T> : never;
-type PathNodeType<T> = T extends Node ? Path<T> : T extends Node[] ? PathNodeTypeHelper<Unpacked<T>>[] : never;
+type PathNodeType<T> = T extends Node[] ? PathNodeTypeHelper<Unpacked<T>>[] : T extends Node ? Path<T> : never;
 
 type ValueTypes<N extends Node, K extends keyof N> = { [P in K]: Unpacked<N[P]> }[K];
 
@@ -65,11 +65,13 @@ function isVisitorWithFinalize(visitor: Visitor): visitor is VisitorWithFinalize
 }
 
 export function pathFrom<N extends Node>(node: N, parent: Path<any> | null): Path<N> {
-  const currentPath = {
+  const currentPath: Path<N> = {
     children: NodeCreators[node.nodeType].children(node),
-    get: name => {
+    get: <KeyName extends NodeKeyNames<N>>(name: KeyName) => {
       const child = node[name];
-      return Array.isArray(child) ? child.map(c => pathFrom(c, currentPath)) : pathFrom(child, currentPath);
+      return Array.isArray(child)
+        ? (child as Array<N[KeyName]>).map(c => pathFrom(c, currentPath))
+        : (pathFrom(child, currentPath) as any);
     },
     node,
     parent,
