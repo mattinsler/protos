@@ -13,13 +13,13 @@
     "clean": "rm -rf dist"
   },
   "dependencies": {
-    "@protos/client": "^0.0.10",
-    "@protos/core": "^0.0.10",
-    "@protos/parser": "^0.0.10",
-    "@protos/to-package-definition": "^0.0.10",
-    "@protos/traverse": "^0.0.10",
+    "@protos/client": "^0.0.11",
+    "@protos/core": "^0.0.11",
+    "@protos/parser": "^0.0.11",
+    "@protos/to-package-definition": "^0.0.11",
+    "@protos/traverse": "^0.0.11",
     "grpc": "^1.24.2",
     "prettier": "^1.17.0"
   },
-  "version": "0.0.10"
+  "version": "0.0.11"
 }
