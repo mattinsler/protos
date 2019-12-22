@@ -16,13 +16,13 @@
     "@types/fs-extra": "^8.0.1",
     "@types/glob": "^7.1.1",
     "@types/got": "^9.4.1",
-    "@types/tar": "^4.0.0"
+    "@types/tar": "^4.0.3"
   },
   "dependencies": {
     "fs-extra": "^8.1.0",
-    "glob": "^7.1.3",
+    "glob": "^7.1.6",
     "got": "^9.6.0",
-    "tar": "^4.4.8"
+    "tar": "^4.4.13"
   },
   "gitHead": "74a69f432e3ed67d8dac2d28d116e8294f57bbd6"
 }
