@@ -1,7 +1,7 @@
 {
   "name": "@protos/parser",
   "description": "",
-  "version": "0.0.12",
+  "version": "0.0.13",
   "license": "MIT",
   "main": "dist/index.js",
   "typings": "dist/index.d.ts",
@@ -21,7 +21,7 @@
     "@types/protoc-plugin": "^0.0.0"
   },
   "dependencies": {
-    "@protos/core": "^0.0.12",
+    "@protos/core": "^0.0.13",
     "execa": "^1.0.0",
     "fs-extra": "^8.1.0",
     "glob": "^7.1.6",
