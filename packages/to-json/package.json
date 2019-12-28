@@ -1,7 +1,7 @@
 {
   "name": "@protos/to-json",
   "description": "",
-  "version": "0.0.13",
+  "version": "0.0.14",
   "license": "MIT",
   "main": "dist/index.js",
   "typings": "dist/index.d.ts",
@@ -20,9 +20,9 @@
     "@types/fs-extra": "^8.0.1"
   },
   "dependencies": {
-    "@protos/core": "^0.0.13",
-    "@protos/fetch": "^0.0.13",
-    "@protos/parser": "^0.0.13",
+    "@protos/core": "^0.0.14",
+    "@protos/fetch": "^0.0.14",
+    "@protos/parser": "^0.0.14",
     "fs-extra": "^8.0.1",
     "nopt": "^4.0.1"
   },
