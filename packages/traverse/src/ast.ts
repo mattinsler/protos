@@ -235,7 +235,7 @@ export const NodeCreators = {
     children: (node: Nodes.MethodResponse) => [node.type],
     from: (spec: Core.MethodSpec): Nodes.MethodResponse => ({
       nodeType: Types.MethodResponse,
-      stream: spec.request.stream,
+      stream: spec.response.stream,
       type: NodeCreators.MessageType.from(spec.response)
     })
   },
