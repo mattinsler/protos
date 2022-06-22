@@ -21,7 +21,7 @@
   "dependencies": {
     "fs-extra": "^8.1.0",
     "glob": "^7.1.6",
-    "got": "^9.6.0",
+    "got": "^11.8.5",
     "tar": "^4.4.13"
   },
   "gitHead": "74a69f432e3ed67d8dac2d28d116e8294f57bbd6"
